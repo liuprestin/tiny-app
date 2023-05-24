@@ -35,22 +35,17 @@ app.get("/urls/:id", (req, res) => {
   res.render("urls_show", templateVars);
 });
 
+//Handling the short URLS
+app.get("/u/:id", (req, res) => {
+  const longURL = urlDatabase[req.params.id];
+  res.redirect(longURL);
+});
 
+//Capture a input url for the database
 app.post("/urls", (req, res) => {
   let uniqueID = generateRandomString();
   urlDatabase[uniqueID] = req.body.longURL;
   res.redirect(`/urls/${uniqueID}`);
-});
-
-app.post("/urls/new", (req, res) => {
-  console.log(req.body); // Log the POST request body to the console
-  res.on('finish', () => {
-    const {key , value } = req.body;
-    urlDatabase[generateRandomString()] = value;
-    console.log(urlDatabase);
-
-  });
-  
 });
 
 // Error handling middleware
