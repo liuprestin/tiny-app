@@ -12,15 +12,7 @@ let urlDatabase = {
 
 app.use(express.urlencoded({ extended: true }));
 
-app.post("/urls", (req, res) => {
-  console.log(req.body); // Log the POST request body to the console
-  
-  //res.json(req.body);
-  let longURL = res.body.longURL;
-  urlDatabase[generateRandomString()] = longURL;
-  res.send("Ok"); // Respond with 'Ok' (we will replace this)
-  
-});
+
 
 app.get("/", (req, res) => {
   res.send("Hello!");
@@ -44,6 +36,28 @@ app.get("/urls/:id", (req, res) => {
 });
 
 
+app.post("/urls", (req, res) => {
+  urlDatabase[generateRandomString()] = req.body.longURL;
+  res.status(200); // Respond with 'Ok' (we will replace this)
+  res.send("200");
+});
+
+app.post("/urls/new", (req, res) => {
+  console.log(req.body); // Log the POST request body to the console
+  res.on('finish', () => {
+    const {key , value } = req.body;
+    urlDatabase[generateRandomString()] = value;
+    console.log(urlDatabase);
+
+  });
+  
+});
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).send('Something broke!');
+});
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
