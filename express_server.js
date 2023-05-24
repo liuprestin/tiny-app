@@ -12,8 +12,6 @@ let urlDatabase = {
 
 app.use(express.urlencoded({ extended: true }));
 
-
-
 app.get("/", (req, res) => {
   res.send("Hello!");
 });
@@ -48,10 +46,19 @@ app.post("/urls", (req, res) => {
   res.redirect(`/urls/${uniqueID}`);
 });
 
+//delete a url
+app.post("/urls/:id/delete", (req, res) => {
+  fullUrl = req.url.split("/");
+  id = fullUrl[2];
+  delete urlDatabase[id];
+
+  res.redirect(`/urls/`);
+});
+
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);
-  res.status(500).send('Something broke!');
+  res.status(500).send("Something broke!");
 });
 
 app.listen(PORT, () => {
