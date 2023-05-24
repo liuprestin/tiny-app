@@ -37,9 +37,9 @@ app.get("/urls/:id", (req, res) => {
 
 
 app.post("/urls", (req, res) => {
-  urlDatabase[generateRandomString()] = req.body.longURL;
-  res.status(200); // Respond with 'Ok' (we will replace this)
-  res.send("200");
+  let uniqueID = generateRandomString();
+  urlDatabase[uniqueID] = req.body.longURL;
+  res.redirect(`/urls/${uniqueID}`);
 });
 
 app.post("/urls/new", (req, res) => {
