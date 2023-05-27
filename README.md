@@ -1,4 +1,9 @@
 
+## Current issues:
+
+- edit - it deletes stuff rather than edits them --> need clarification 
+- the css styling is off 
+
 
 ## Dev server run
 
