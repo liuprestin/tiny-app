@@ -55,6 +55,20 @@ app.post("/urls/:id/delete", (req, res) => {
   res.redirect(`/urls/`);
 });
 
+//edit a url
+app.post("/urls/:id/update", (req, res) => {
+  fullUrl = req.url.split("/");
+  id = fullUrl[2];
+
+  updateURL = req.body.updateURL;
+  
+  console.log(req.body.updateURL);
+
+  urlDatabase[id] = updateURL;
+
+  res.redirect(`/urls/`);
+});
+
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);
