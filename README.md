@@ -1,7 +1,7 @@
 
 ## Current issues:
 
-- edit - it deletes stuff rather than edits them --> need clarification 
+
 - the css styling is off 
 
 
@@ -13,3 +13,4 @@
 - express js
 - EJS template engine https://ejs.co/
 - (dev) nodemon https://github.com/remy/nodemon
+- (dev) morgan
