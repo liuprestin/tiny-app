@@ -3,6 +3,11 @@ const { generateRandomString } = require("./util.js");
 const app = express();
 const PORT = 8080; // default port 8080
 
+const morgan = require("morgan");
+// add body parser? 
+
+app.use(morgan('dev'));
+app.use(express.urlencoded({ extended: true }));
 app.set("view engine", "ejs");
 
 let urlDatabase = {
@@ -10,8 +15,8 @@ let urlDatabase = {
   "9sm5xK": "http://www.google.com",
 };
 
-app.use(express.urlencoded({ extended: true }));
 
+// this should be the home page 
 app.get("/", (req, res) => {
   res.send("Hello!");
 });
