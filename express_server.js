@@ -4,11 +4,14 @@ const app = express();
 const PORT = 8080; // default port 8080
 
 const morgan = require("morgan");
+const cookieParser = require('cookie-parser');
 // add body parser? 
 
 app.use(morgan('dev'));
+
 app.use(express.urlencoded({ extended: true }));
 app.set("view engine", "ejs");
+aap.use(cookieParser());
 
 let urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
@@ -16,11 +19,23 @@ let urlDatabase = {
 };
 
 
-// this should be the home page 
+//Homepage 
 app.get("/", (req, res) => {
   res.send("Hello!");
 });
 
+//LOGIN
+app.get("/login", (req, res) => {
+  res.redirect("/urls");
+});
+
+app.post("/login", (req, res) => {
+  let username = req.body.username;
+  res.cookie('username', username);
+  res.redirect(`/urls/`);
+});
+
+// Handle URLs
 app.get("/urls", (req, res) => {
   const templateVars = { urls: urlDatabase };
   res.render("urls_index", templateVars);
