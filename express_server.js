@@ -11,7 +11,7 @@ app.use(morgan('dev'));
 
 app.use(express.urlencoded({ extended: true }));
 app.set("view engine", "ejs");
-aap.use(cookieParser());
+app.use(cookieParser());
 
 let urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
@@ -37,7 +37,9 @@ app.post("/login", (req, res) => {
 
 // Handle URLs
 app.get("/urls", (req, res) => {
-  const templateVars = { urls: urlDatabase };
+  const templateVars = { 
+    username: req.cookies["username"],
+    urls: urlDatabase };
   res.render("urls_index", templateVars);
 });
 
