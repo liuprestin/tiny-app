@@ -24,6 +24,20 @@ app.get("/", (req, res) => {
   res.send("Hello!");
 });
 
+//Registration 
+app.get("/register", (req, res) => {
+  const templateVars = { 
+    username: req.cookies["username"]
+  };
+  res.render("register", templateVars);
+});
+app.post("/register", (req, res) => {
+  /*let username = req.body.username;
+  res.cookie('username', username);
+  res.redirect(`/urls/`);*/
+  res.send("FIXME: handle login");
+});
+
 //LOGIN
 app.get("/login", (req, res) => {
   res.redirect("/urls");
@@ -44,7 +58,8 @@ app.post("/login", (req, res) => {
 app.get("/urls", (req, res) => {
   const templateVars = { 
     username: req.cookies["username"],
-    urls: urlDatabase };
+    urls: urlDatabase 
+  };
   res.render("urls_index", templateVars);
 });
 
