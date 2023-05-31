@@ -20,8 +20,8 @@
     <div>
 
       </div>
-      <% if(username) { %>
-        <p><%= username %> is Logged in</p>
+      <% if(user) { %>
+        <p><%= user %> is Logged in</p>
         <form action="/logout" method="POST" >
           <input type="submit" value="Logout"> 
         </form>

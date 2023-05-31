@@ -41,8 +41,9 @@ app.get("/", (req, res) => {
 //Registration
 app.get("/register", (req, res) => {
   const templateVars = {
-    username: req.cookies["username"],
+    user: req.cookies["user"],
   };
+  console.log(templateVars);
   res.render("register", templateVars);
 });
 app.post("/register", (req, res) => {
@@ -51,9 +52,7 @@ app.post("/register", (req, res) => {
   
   users[id] = {id, email, password};
 
-  res.cookie(`${id}`, {id, email, password});
-
-  console.log(users);
+  res.cookie(`user`, {id, email, password});
 
   res.redirect(`/urls/`);
 });
@@ -64,20 +63,20 @@ app.get("/login", (req, res) => {
 });
 
 app.post("/logout", (req, res) => {
-  res.clearCookie("username");
+  res.clearCookie("user");
   res.redirect(`/urls/`);
 });
 
+//needs cleanup --> this doesn't make sense 
 app.post("/login", (req, res) => {
-  let username = req.body.username;
-  res.cookie("username", username);
+
   res.redirect(`/urls/`);
 });
 
 // Handle URLs
 app.get("/urls", (req, res) => {
   const templateVars = {
-    username: req.cookies["username"],
+    user: req.cookies["user"],
     urls: urlDatabase,
   };
   res.render("urls_index", templateVars);
