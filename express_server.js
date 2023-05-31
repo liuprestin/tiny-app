@@ -52,6 +52,12 @@ app.post("/register", (req, res) => {
   
   users[id] = {id, email, password};
 
+  //cannot have empty string
+  if(!email || !password){
+    res.status(400).end("<p>Email and password cannot be blank</p>");
+  }
+  // needs to check if the email exists 
+
   res.cookie(`user_id`, id);
 
   res.redirect(`/urls/`);
