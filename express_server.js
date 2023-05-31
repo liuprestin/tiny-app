@@ -20,6 +20,7 @@ let urlDatabase = {
 };
 
 //FIXME: remove the test values
+// users[].email
 const users = {
   userRandomID: {
     id: "userRandomID",
@@ -40,10 +41,14 @@ app.get("/", (req, res) => {
 
 //Registration
 app.get("/register", (req, res) => {
-  const templateVars = {
+  let id = req.cookies["user_id"];
+  let email;
+  let templateVars = {
     user_id: req.cookies["user_id"],
+    email: "test@email.com",
   };
-  console.log(templateVars);
+  
+  
   res.render("register", templateVars);
 });
 app.post("/register", (req, res) => {
@@ -81,20 +86,49 @@ app.post("/login", (req, res) => {
 
 // Handle URLs
 app.get("/urls", (req, res) => {
+console.log("users", users);
+
+if(!req.cookies["user_id"]){
+  res.send("Not logged in");
+}
+
+let user_id = req.cookies["user_id"];
+
+
   const templateVars = {
     user_id: req.cookies["user_id"],
+    email: users[id].email, // 1
     urls: urlDatabase,
   };
   res.render("urls_index", templateVars);
 });
 
 app.get("/urls/new", (req, res) => {
-  res.render("urls_new");
+
+  if(!req.cookies["user_id"]){
+    res.send("Not logged in");
+  }
+  let id = req.cookies["user_id"];
+  
+  const templateVars = {
+    user_id: req.cookies["user_id"],
+    email: users[id].email,
+    urls: urlDatabase,
+  };
+
+  res.render("urls_new", templateVars);
 });
 
 app.get("/urls/:id", (req, res) => {
+  if(!req.cookies["user_id"]){
+    res.send("Not logged in");
+  }
+  
+  let id = req.cookies["user_id"];
+
   const templateVars = {
     id: req.params.id,
+    email: users[id].email, // 3
     longURL: urlDatabase[req.params.id],
   };
   res.render("urls_show", templateVars);
@@ -129,8 +163,6 @@ app.post("/urls/:id/update", (req, res) => {
 
   updateURL = req.body.updateURL;
 
-  console.log(req.body.updateURL);
-
   urlDatabase[id] = updateURL;
 
   res.redirect(`/urls/`);
@@ -143,5 +175,5 @@ app.use((err, req, res, next) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`Example app listening on port ${PORT}!`);
+  console.log(`Tiny Url app listening on port ${PORT}!`);
 });
