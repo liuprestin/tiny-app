@@ -1,5 +1,5 @@
 const express = require("express");
-const { generateRandomString, userEmailSearch } = require("./util.js");
+const { generateRandomString, userEmailSearch, getUserByEmail, userPasswordCheck } = require("./util.js");
 const app = express();
 const PORT = 8080; // default port 8080
 
@@ -85,14 +85,34 @@ app.get("/login", (req, res) => {
   res.render("login", templateVars);
 });
 
-app.post("/logout", (req, res) => {
-  res.clearCookie("user_id");
+//needs cleanup --> this doesn't make sense 
+app.post("/login", (req, res) => {
+  let {email, password} = req.body;
+
+  //cannot have empty string
+  if(!email || !password){
+    res.status(400).end("<p>Email and password cannot be blank</p>");
+    return;
+  }
+   // needs to check if the email exists 
+  if(!userEmailSearch(users, email)){
+    res.status(403).end(`<p> ${email} does not exist please register </p>`);
+  }
+
+  if(!userPasswordCheck(users, email, password)){
+    res.status(403).end(`<p> ${email} and/or ${password} do not match </p>`);
+    return;
+  }
+ 
+  id = getUserByEmail(users, email);
+
+  res.cookie(`user_id`, id);
+
   res.redirect(`/urls/`);
 });
 
-//needs cleanup --> this doesn't make sense 
-app.post("/login", (req, res) => {
-
+app.post("/logout", (req, res) => {
+  res.clearCookie("user_id");
   res.redirect(`/urls/`);
 });
 
