@@ -17,4 +17,18 @@ function userEmailSearch(collection, email) {
   return false;
 }
 
+// Given an email , search the Users collection object 
+// for the user id.
+// returns the user id if present
+// otherwise returns empty string 
+function getUserByEmail(collection, email) {
+  for (let [key, value] of Object.entries(collection)) {
+    
+    if (collection[key].email == email) {
+      return collection[key];
+    }
+  }
+  return "";
+}
+
 module.exports = { generateRandomString, userEmailSearch };
