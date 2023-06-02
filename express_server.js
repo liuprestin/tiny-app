@@ -177,13 +177,8 @@ app.get("/urls/:id", (req, res) => {
 
 //Handling the short URLS
 app.get("/u/:id", (req, res) => {
-  if(!req.cookies["user_id"]){
-    res.send(`<p> You must be logged in to shorten URLs </p>`);
-    res.redirect(`/login`);
-  }
-
   if(!urlDatabase[req.params.id]){
-    res.status(400).end("<p>tiny url id does not exist</p>");
+    res.status(400).end("<p>tiny url id does not existgit</p>");
   }
 
   const longURL = urlDatabase[req.params.id];
