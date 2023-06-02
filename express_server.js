@@ -1,5 +1,5 @@
 const express = require("express");
-const { generateRandomString } = require("./util.js");
+const { generateRandomString, userEmailSearch } = require("./util.js");
 const app = express();
 const PORT = 8080; // default port 8080
 
@@ -55,13 +55,19 @@ app.post("/register", (req, res) => {
   let {email, password} = req.body;
   id = generateRandomString();
   
-  users[id] = {id, email, password};
 
   //cannot have empty string
   if(!email || !password){
     res.status(400).end("<p>Email and password cannot be blank</p>");
+    return;
   }
-  // needs to check if the email exists 
+   // needs to check if the email exists 
+  if(userEmailSearch(users, email)){
+    res.status(400).end(`<p> ${email} already exists </p>`)
+    return;
+  }
+ 
+  users[id] = {id, email, password};
 
   res.cookie(`user_id`, id);
 
