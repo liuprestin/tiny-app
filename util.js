@@ -1,3 +1,5 @@
+const bcrypt = require("bcryptjs");
+
 //utility function to generate a random string
 // right now the function has a hard coded length
 function generateRandomString() {
@@ -20,10 +22,14 @@ function userEmailSearch(collection, email) {
 //utility function to traverse through the user object (see express_server.js)
 // and verify that the email/password match 
 // will return true or false
+
+//note: may need bcrypt to decrypt passwords
+// bcrypt.compareSync("purple-monkey-dinosaur", hashedPassword); // returns true
+// bcrypt.compareSync("pink-donkey-minotaur", hashedPassword); // returns false
 function userPasswordCheck(collection, email, password) {
   for (let [key, value] of Object.entries(collection)) {
     console.log(collection[key].email);
-    if (collection[key].email == email && collection[key].password == password) {
+    if (collection[key].email == email && bcrypt.compareSync(password, collection[key].password)) {
       return true;
     }
   }
@@ -43,5 +49,8 @@ function getUserByEmail(collection, email) {
   }
   return "";
 }
+
+// Will need some utility functions for the url database --> at this point it maybe a better 
+// idea to split the utility functions into seperate cases: general, users_utility, urls_utility 
 
 module.exports = { generateRandomString, userEmailSearch, userPasswordCheck, getUserByEmail };

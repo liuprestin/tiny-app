@@ -5,7 +5,8 @@ const PORT = 8080; // default port 8080
 
 const morgan = require("morgan");
 const cookieParser = require("cookie-parser");
-// add body parser?
+const bcrypt = require("bcryptjs");
+
 
 app.use(morgan("dev"));
 
@@ -17,6 +18,17 @@ app.use(cookieParser());
 let urlDatabase = {
   b2xVn2: "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com",
+};
+
+let newURLdb = {
+  b6UTxQ: {
+    longURL: "https://www.tsn.ca",
+    userID: "aJ48lW",
+  },
+  i3BoGr: {
+    longURL: "https://www.google.ca",
+    userID: "aJ48lW",
+  },
 };
 
 //FIXME: remove the test values
@@ -57,9 +69,9 @@ app.get("/register", (req, res) => {
 });
 app.post("/register", (req, res) => {
   let {email, password} = req.body;
+  
   id = generateRandomString();
   
-
   //cannot have empty string
   if(!email || !password){
     res.status(400).end("<p>Email and password cannot be blank</p>");
@@ -70,8 +82,11 @@ app.post("/register", (req, res) => {
     res.status(400).end(`<p> ${email} already exists </p>`)
     return;
   }
- 
-  users[id] = {id, email, password};
+  
+  //the server stores hashed passwords
+  let hashedPassword = bcrypt.hashSync(password, 10);
+
+  users[id] = {id, email, hashedPassword};
 
   res.cookie(`user_id`, id);
 
