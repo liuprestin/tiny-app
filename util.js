@@ -17,6 +17,19 @@ function userEmailSearch(collection, email) {
   return false;
 }
 
+//utility function to traverse through the user object (see express_server.js)
+// and verify that the email/password match 
+// will return true or false
+function userPasswordCheck(collection, email, password) {
+  for (let [key, value] of Object.entries(collection)) {
+    console.log(collection[key].email);
+    if (collection[key].email == email && collection[key].password == password) {
+      return true;
+    }
+  }
+  return false;
+}
+
 // Given an email , search the Users collection object 
 // for the user id.
 // returns the user id if present
@@ -25,10 +38,10 @@ function getUserByEmail(collection, email) {
   for (let [key, value] of Object.entries(collection)) {
     
     if (collection[key].email == email) {
-      return collection[key];
+      return collection[key].id;
     }
   }
   return "";
 }
 
-module.exports = { generateRandomString, userEmailSearch };
+module.exports = { generateRandomString, userEmailSearch, userPasswordCheck, getUserByEmail };
