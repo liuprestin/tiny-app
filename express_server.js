@@ -41,6 +41,10 @@ app.get("/", (req, res) => {
 
 //Registration
 app.get("/register", (req, res) => {
+  if(req.cookies["user_id"]){
+    res.redirect("/urls/");
+  }
+
   let id = req.cookies["user_id"];
   let email;
   let templateVars = {
@@ -76,6 +80,10 @@ app.post("/register", (req, res) => {
 
 //LOGIN
 app.get("/login", (req, res) => {
+  if(req.cookies["user_id"]){
+    res.redirect("/urls/");
+  }
+
   let id = req.cookies["user_id"];
   let email;
   let templateVars = {
@@ -121,7 +129,7 @@ app.get("/urls", (req, res) => {
 console.log("users", users);
 
 if(!req.cookies["user_id"]){
-  res.send("Not logged in");
+  res.redirect(`/login`);
 }
 
 let user_id = req.cookies["user_id"];
@@ -136,9 +144,9 @@ let user_id = req.cookies["user_id"];
 });
 
 app.get("/urls/new", (req, res) => {
-
   if(!req.cookies["user_id"]){
-    res.send("Not logged in");
+    res.send(`<p> You must be logged in to shorten URLs </p>`);
+    res.redirect(`/login`);
   }
   let id = req.cookies["user_id"];
   
@@ -153,7 +161,8 @@ app.get("/urls/new", (req, res) => {
 
 app.get("/urls/:id", (req, res) => {
   if(!req.cookies["user_id"]){
-    res.send("Not logged in");
+    res.send(`<p> You must be logged in to shorten URLs </p>`);
+    res.redirect(`/login`);
   }
   
   let id = req.cookies["user_id"];
@@ -168,12 +177,26 @@ app.get("/urls/:id", (req, res) => {
 
 //Handling the short URLS
 app.get("/u/:id", (req, res) => {
+  if(!req.cookies["user_id"]){
+    res.send(`<p> You must be logged in to shorten URLs </p>`);
+    res.redirect(`/login`);
+  }
+
+  if(!urlDatabase[req.params.id]){
+    res.status(400).end("<p>tiny url id does not exist</p>");
+  }
+
   const longURL = urlDatabase[req.params.id];
   res.redirect(longURL);
 });
 
 //Capture a input url for the database
 app.post("/urls", (req, res) => {
+  if(!req.cookies["user_id"]){
+    res.send(`<p> You must be logged in to shorten URLs </p>`);
+    res.redirect(`/login`);
+  }
+
   let uniqueID = generateRandomString();
   urlDatabase[uniqueID] = req.body.longURL;
   res.redirect(`/urls/${uniqueID}`);
