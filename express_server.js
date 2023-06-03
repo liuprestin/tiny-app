@@ -1,12 +1,18 @@
 const express = require("express");
-const { generateRandomString, userEmailSearch, getUserByEmail, userPasswordCheck } = require("./util.js");
+const { generateRandomString } = require("./util.js");
+const {
+  userEmailSearch,
+  getUserByEmail,
+  userPasswordCheck,
+} = require("./usersUtil.js");
+
+const {} = require("./urldbUtil.js")
 const app = express();
 const PORT = 8080; // default port 8080
 
 const morgan = require("morgan");
 const cookieParser = require("cookie-parser");
 const bcrypt = require("bcryptjs");
-
 
 app.use(morgan("dev"));
 
@@ -20,19 +26,8 @@ let urlDatabase = {
   "9sm5xK": "http://www.google.com",
 };
 
-let newURLdb = {
-  b6UTxQ: {
-    longURL: "https://www.tsn.ca",
-    userID: "aJ48lW",
-  },
-  i3BoGr: {
-    longURL: "https://www.google.ca",
-    userID: "aJ48lW",
-  },
-};
 
 //FIXME: remove the test values
-// users[].email
 const users = {
   userRandomID: {
     id: "userRandomID",
@@ -48,12 +43,12 @@ const users = {
 
 //Homepage
 app.get("/", (req, res) => {
-  res.send("Hello!");
+  res.redirect("/urls/");
 });
 
 //Registration
 app.get("/register", (req, res) => {
-  if(req.cookies["user_id"]){
+  if (req.cookies["user_id"]) {
     res.redirect("/urls/");
   }
 
@@ -61,33 +56,34 @@ app.get("/register", (req, res) => {
   let email;
   let templateVars = {
     user_id: req.cookies["user_id"],
-    email: "test@email.com",
+    email: "test@email.com",   //<_______________ FIX
   };
-  
-  
+
   res.render("register", templateVars);
 });
+
 app.post("/register", (req, res) => {
-  let {email, password} = req.body;
-  
-  id = generateRandomString();
-  
+  let { email, password } = req.body;
+
+  let id = generateRandomString();
+
   //cannot have empty string
-  if(!email || !password){
+  if (!email || !password) {
     res.status(400).end("<p>Email and password cannot be blank</p>");
     return;
   }
-   // needs to check if the email exists 
-  if(userEmailSearch(users, email)){
-    res.status(400).end(`<p> ${email} already exists </p>`)
+  // needs to check if the email exists
+  if (userEmailSearch(users, email)) {
+    res.status(400).end(`<p> ${email} already exists </p>`);
     return;
   }
-  
+
+  let salt = bcrypt.genSaltSync();
   //the server stores hashed passwords
-  let hashedPassword = bcrypt.hashSync(password, 10);
+  let hashedPassword = bcrypt.hashSync(password, salt);
 
-  users[id] = {id, email, hashedPassword};
-
+  users[id] = { id, email, password: hashedPassword };
+  console.log(users);
   res.cookie(`user_id`, id);
 
   res.redirect(`/urls/`);
@@ -95,7 +91,7 @@ app.post("/register", (req, res) => {
 
 //LOGIN
 app.get("/login", (req, res) => {
-  if(req.cookies["user_id"]){
+  if (req.cookies["user_id"]) {
     res.redirect("/urls/");
   }
 
@@ -104,30 +100,30 @@ app.get("/login", (req, res) => {
   let templateVars = {
     user_id: req.cookies["user_id"],
   };
-  
+
   res.render("login", templateVars);
 });
 
-//needs cleanup --> this doesn't make sense 
+//needs cleanup --> this doesn't make sense
 app.post("/login", (req, res) => {
-  let {email, password} = req.body;
+  let { email, password } = req.body;
 
   //cannot have empty string
-  if(!email || !password){
+  if (!email || !password) {
     res.status(400).end("<p>Email and password cannot be blank</p>");
     return;
   }
-   // needs to check if the email exists 
-  if(!userEmailSearch(users, email)){
+  // needs to check if the email exists
+  if (!userEmailSearch(users, email)) {
     res.status(403).end(`<p> ${email} does not exist please register </p>`);
+    return;
   }
 
-  if(!userPasswordCheck(users, email, password)){
+  let id = getUserByEmail(users, email);
+  if (!userPasswordCheck(users, id, email, password)) {
     res.status(403).end(`<p> ${email} and/or ${password} do not match </p>`);
     return;
   }
- 
-  id = getUserByEmail(users, email);
 
   res.cookie(`user_id`, id);
 
@@ -141,14 +137,14 @@ app.post("/logout", (req, res) => {
 
 // Handle URLs
 app.get("/urls", (req, res) => {
-console.log("users", users);
+  console.log("users", users);
 
-if(!req.cookies["user_id"]){
-  res.redirect(`/login`);
-}
+  if (!req.cookies["user_id"]) {
+    res.redirect(`/login`);
+    return;
+  }
 
-let user_id = req.cookies["user_id"];
-
+  let id = req.cookies["user_id"];
 
   const templateVars = {
     user_id: req.cookies["user_id"],
@@ -159,12 +155,13 @@ let user_id = req.cookies["user_id"];
 });
 
 app.get("/urls/new", (req, res) => {
-  if(!req.cookies["user_id"]){
+  if (!req.cookies["user_id"]) {
     res.send(`<p> You must be logged in to shorten URLs </p>`);
     res.redirect(`/login`);
+    return;
   }
   let id = req.cookies["user_id"];
-  
+
   const templateVars = {
     user_id: req.cookies["user_id"],
     email: users[id].email,
@@ -175,11 +172,12 @@ app.get("/urls/new", (req, res) => {
 });
 
 app.get("/urls/:id", (req, res) => {
-  if(!req.cookies["user_id"]){
+  if (!req.cookies["user_id"]) {
     res.send(`<p> You must be logged in to shorten URLs </p>`);
     res.redirect(`/login`);
+    return;
   }
-  
+
   let id = req.cookies["user_id"];
 
   const templateVars = {
@@ -192,8 +190,9 @@ app.get("/urls/:id", (req, res) => {
 
 //Handling the short URLS
 app.get("/u/:id", (req, res) => {
-  if(!urlDatabase[req.params.id]){
-    res.status(400).end("<p>tiny url id does not existgit</p>");
+  if (!urlDatabase[req.params.id]) {
+    res.status(400).end("<p>tiny url id does not exist</p>");
+    return;
   }
 
   const longURL = urlDatabase[req.params.id];
@@ -202,9 +201,10 @@ app.get("/u/:id", (req, res) => {
 
 //Capture a input url for the database
 app.post("/urls", (req, res) => {
-  if(!req.cookies["user_id"]){
+  if (!req.cookies["user_id"]) {
     res.send(`<p> You must be logged in to shorten URLs </p>`);
     res.redirect(`/login`);
+    return;
   }
 
   let uniqueID = generateRandomString();
@@ -237,6 +237,7 @@ app.post("/urls/:id/update", (req, res) => {
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).send("Something broke!");
+  return;
 });
 
 app.listen(PORT, () => {
