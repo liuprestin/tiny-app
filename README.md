@@ -1,17 +1,19 @@
+# TinyApp 
 
-## Current issues:
+A tiny URL shortener application writen with nodejs/express
 
-- there is no homepage or login 
-- the css styling is off 
+## How to run
 
+/tiny-app directory:
 
-## Dev server run
+npm start 
 
-`npm start`
 
 ## Dependencies
 - express js
 - [EJS template engine](https://ejs.co/)
-- [cookie-parser](https://github.com/expressjs/cookie-parser)
+- cookie-session
+- bcryptjs
+- (dev) mocha/chai
 - (dev) nodemon https://github.com/remy/nodemon
 - (dev) morgan

@@ -22,9 +22,6 @@ function userPasswordCheck(collection, id, email, password) {
   if (!collection[id]) {
     return false; //user does not exist
   }
-  console.log(collection[id]);
-  console.log(password, collection[id].password);
-  console.log(bcrypt.compareSync(password, collection[id].password));
   if ( collection[id].email == email && bcrypt.compareSync(password, collection[id].password))
    {
     return true;

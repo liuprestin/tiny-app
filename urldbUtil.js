@@ -13,6 +13,7 @@
 // get all URLIDs associated with a userID --> maybe return a array 
 // (this will be needed if logging in and needed )
 
+
 {
   urlID: {
     longURL,
@@ -20,6 +21,10 @@
   }
 }
 */
+
+const { generateRandomString } = require("./util.js");
+
+
 let newURLdb = {
     b6UTxQ: {
       longURL: "https://www.tsn.ca",
@@ -31,4 +36,13 @@ let newURLdb = {
     },
   };
   
+function addNewUrl(collection, longURL, user_id){
+  
+}  
+//given a collection return an 
+// object with the current collection of urls relative to an id
+function urlsForUser(collection, id){
+
+}
+
 module.exports = {};

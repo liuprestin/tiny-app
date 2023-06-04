@@ -11,14 +11,25 @@ const app = express();
 const PORT = 8080; // default port 8080
 
 const morgan = require("morgan");
-const cookieParser = require("cookie-parser");
+const cookieSession = require("cookie-session");
 const bcrypt = require("bcryptjs");
 
 app.use(morgan("dev"));
 
 app.use(express.urlencoded({ extended: true }));
 app.set("view engine", "ejs");
-app.use(cookieParser());
+app.use(cookieSession({
+  name: 'session',
+  keys: ['keya'],
+
+  // Cookie Options
+  maxAge: 2 * 60 * 60 * 1000 // 2 hours session span
+}));
+
+app.use((req, res, next) => {
+  req.session.views = (req.session.views || 0) + 1;
+  next();
+});
 
 //FIXME: remove the test values
 let urlDatabase = {
@@ -48,15 +59,16 @@ app.get("/", (req, res) => {
 
 //Registration
 app.get("/register", (req, res) => {
-  if (req.cookies["user_id"]) {
+
+  if (req.session.user_id) {
     res.redirect("/urls/");
   }
 
-  let id = req.cookies["user_id"];
+  let id = req.session.user_id;
   let email;
   let templateVars = {
-    user_id: req.cookies["user_id"],
-    email: "test@email.com",   //<_______________ FIX
+    user_id: req.session.user_id,
+    email: "no@email.com",   //<_______________ FIX
   };
 
   res.render("register", templateVars);
@@ -84,21 +96,22 @@ app.post("/register", (req, res) => {
 
   users[id] = { id, email, password: hashedPassword };
   console.log(users);
-  res.cookie(`user_id`, id);
+  req.session.user_id = id;
 
   res.redirect(`/urls/`);
 });
 
 //LOGIN
 app.get("/login", (req, res) => {
-  if (req.cookies["user_id"]) {
+
+  if (req.session.user_id) {
     res.redirect("/urls/");
   }
 
-  let id = req.cookies["user_id"];
+  let id = req.session.user_id;
   let email;
   let templateVars = {
-    user_id: req.cookies["user_id"],
+    user_id: req.session.user_id,
   };
 
   res.render("login", templateVars);
@@ -125,29 +138,31 @@ app.post("/login", (req, res) => {
     return;
   }
 
-  res.cookie(`user_id`, id);
+  req.session.user_id = id;
+  console.log(req.session.user_id);
 
   res.redirect(`/urls/`);
 });
 
 app.post("/logout", (req, res) => {
-  res.clearCookie("user_id");
+  req.session = null;
   res.redirect(`/urls/`);
 });
 
 // Handle URLs
 app.get("/urls", (req, res) => {
-  console.log("users", users);
-
-  if (!req.cookies["user_id"]) {
+  if (!req.session.user_id) {
+    res.send(`<p> You must be logged in to shorten URLs </p>`);
     res.redirect(`/login`);
     return;
   }
 
-  let id = req.cookies["user_id"];
+  let id = req.session.user_id;
+  let email = id ? users[id].email : '';
+  
 
   const templateVars = {
-    user_id: req.cookies["user_id"],
+    user_id: req.session.user_id,
     email: users[id].email, // 1
     urls: urlDatabase,
   };
@@ -155,15 +170,16 @@ app.get("/urls", (req, res) => {
 });
 
 app.get("/urls/new", (req, res) => {
-  if (!req.cookies["user_id"]) {
+
+  if (!req.session.user_id) {
     res.send(`<p> You must be logged in to shorten URLs </p>`);
     res.redirect(`/login`);
     return;
   }
-  let id = req.cookies["user_id"];
+  let id = req.session.user_id;
 
   const templateVars = {
-    user_id: req.cookies["user_id"],
+    user_id: req.session.user_id,
     email: users[id].email,
     urls: urlDatabase,
   };
@@ -172,13 +188,13 @@ app.get("/urls/new", (req, res) => {
 });
 
 app.get("/urls/:id", (req, res) => {
-  if (!req.cookies["user_id"]) {
+  if (!req.session.user_id) {
     res.send(`<p> You must be logged in to shorten URLs </p>`);
     res.redirect(`/login`);
     return;
   }
 
-  let id = req.cookies["user_id"];
+  let id = req.session.user_id;
 
   const templateVars = {
     id: req.params.id,
@@ -190,6 +206,7 @@ app.get("/urls/:id", (req, res) => {
 
 //Handling the short URLS
 app.get("/u/:id", (req, res) => {
+
   if (!urlDatabase[req.params.id]) {
     res.status(400).end("<p>tiny url id does not exist</p>");
     return;
@@ -201,7 +218,8 @@ app.get("/u/:id", (req, res) => {
 
 //Capture a input url for the database
 app.post("/urls", (req, res) => {
-  if (!req.cookies["user_id"]) {
+  if (!req.session.user_id) {
+    console.log(req.session.user_id);
     res.send(`<p> You must be logged in to shorten URLs </p>`);
     res.redirect(`/login`);
     return;
