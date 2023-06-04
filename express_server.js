@@ -1,12 +1,12 @@
 const express = require("express");
-const { generateRandomString } = require("./util.js");
+const { generateRandomString } = require("./helper/util.js");
 const {
   userEmailSearch,
   getUserByEmail,
   userPasswordCheck,
-} = require("./usersUtil.js");
+} = require("./helper/usersUtil.js");
 
-const { urlsForUser, addNewUrl, deleteUrl, updateUrl } = require("./urldbUtil.js")
+const { urlsForUser, addNewUrl, deleteUrl, updateUrl } = require("./helper/urldbUtil.js")
 const app = express();
 const PORT = 8080; // default port 8080
 
@@ -127,6 +127,7 @@ app.post("/login", (req, res) => {
 
 app.post("/logout", (req, res) => {
   req.session = null;
+  res.cookie('session', '', { expires: new Date(0) });
   res.redirect(`/login`);
 });
 

@@ -2,7 +2,7 @@
 
 const { assert } = require('chai');
 
-const { getUserByEmail } = require('../util.js');
+const { getUserByEmail } = require('../helper/usersUtil.js');
 
 const testUsers = {
   "userRandomID": {
