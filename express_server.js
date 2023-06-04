@@ -31,13 +31,13 @@ app.use((req, res, next) => {
   next();
 });
 
-let urlDatabase = {};
+const urlDatabase = {};
 
 const users = {};
 
 //Homepage
 app.get("/", (req, res) => {
-  res.redirect("/urls/");
+  res.redirect("/login");
 });
 
 //Registration
@@ -47,10 +47,10 @@ app.get("/register", (req, res) => {
     res.redirect("/urls/");
   }
 
-  let id = req.session.user_id;
-  let email;
-  let templateVars = {
-    user_id: req.session.user_id,
+  const id = req.session.user_id;
+
+  const templateVars = {
+    user_id: id,
     email: "no@email.com",  
   };
 
@@ -58,9 +58,9 @@ app.get("/register", (req, res) => {
 });
 
 app.post("/register", (req, res) => {
-  let { email, password } = req.body;
+  const { email, password } = req.body;
 
-  let id = generateRandomString();
+  const id = generateRandomString();
 
   //cannot have empty string
   if (!email || !password) {
@@ -73,9 +73,9 @@ app.post("/register", (req, res) => {
     return;
   }
 
-  let salt = bcrypt.genSaltSync();
+  const salt = bcrypt.genSaltSync();
   //the server stores hashed passwords
-  let hashedPassword = bcrypt.hashSync(password, salt);
+  const hashedPassword = bcrypt.hashSync(password, salt);
 
   users[id] = { id, email, password: hashedPassword };
   req.session.user_id = id;
@@ -90,10 +90,10 @@ app.get("/login", (req, res) => {
     res.redirect("/urls/");
   }
 
-  let id = req.session.user_id;
-  let email;
-  let templateVars = {
-    user_id: req.session.user_id,
+  const id = req.session.user_id;
+
+  const templateVars = {
+    user_id: id,
   };
 
   res.render("login", templateVars);
@@ -101,7 +101,7 @@ app.get("/login", (req, res) => {
 
 //needs cleanup --> this doesn't make sense
 app.post("/login", (req, res) => {
-  let { email, password } = req.body;
+  const { email, password } = req.body;
 
   //cannot have empty string
   if (!email || !password) {
@@ -114,7 +114,7 @@ app.post("/login", (req, res) => {
     return;
   }
 
-  let id = getUserByEmail(users, email);
+  const id = getUserByEmail(users, email);
   if (!userPasswordCheck(users, id, email, password)) {
     res.status(403).end(`<p> ${email} and/or ${password} do not match </p>`);
     return;
@@ -127,7 +127,7 @@ app.post("/login", (req, res) => {
 
 app.post("/logout", (req, res) => {
   req.session = null;
-  res.redirect(`/urls/`);
+  res.redirect(`/login`);
 });
 
 // Handle URLs
@@ -138,15 +138,15 @@ app.get("/urls", (req, res) => {
     return;
   }
 
-  let id = req.session.user_id;
-  let email = id ? users[id].email : '';
+  const id = req.session.user_id;
+  const email = id ? users[id].email : '';
 
   userUrlDB = urlsForUser(urlDatabase, id);
   
 
   const templateVars = {
     user_id: req.session.user_id,
-    email: users[id].email, // 1
+    email, 
     urls: userUrlDB,
   };
   res.render("urls_index", templateVars);
@@ -159,7 +159,7 @@ app.get("/urls/new", (req, res) => {
     res.redirect(`/login`);
     return;
   }
-  let id = req.session.user_id;
+  const id = req.session.user_id;
 
   userUrlDB = urlsForUser(urlDatabase, id);
 
@@ -180,10 +180,15 @@ app.get("/urls/:id", (req, res) => {
     return;
   }
 
-  let id = req.session.user_id;
+  const id = req.session.user_id;
   userUrlDB = urlsForUser(urlDatabase, id);
+  
+  if (!userUrlDB[req.params.id]) {
+    res.status(400).end("<p>tiny url id does not exist for this user</p>");
+    return;
+  }
 
-  let longURLentry = req.params.id ? userUrlDB[req.params.id] : '';
+  const longURLentry = req.params.id ? userUrlDB[req.params.id] : '';
 
   const templateVars = {
     id: req.params.id,
@@ -196,7 +201,7 @@ app.get("/urls/:id", (req, res) => {
 
 //Handling the short URLS
 app.get("/u/:id", (req, res) => {
-  let id = req.session.user_id;
+  const id = req.session.user_id;
   userUrlDB = urlsForUser(urlDatabase, id);
 
   if (!userUrlDB[req.params.id]) {
@@ -216,9 +221,9 @@ app.post("/urls", (req, res) => {
     return;
   }
 
-  let uniqueID = generateRandomString();
+  const uniqueID = generateRandomString();
 
-  let id = req.session.user_id;
+  const id = req.session.user_id;
   userUrlDB = urlsForUser(urlDatabase, id);
 
   addNewUrl(urlDatabase, uniqueID, req.body.longURL, id);
