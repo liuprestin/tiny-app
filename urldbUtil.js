@@ -42,7 +42,7 @@ function urlsForUser(collection, user_id){
   }
 
   for (let [key, value] of Object.entries(collection)) {
-     if(collection[key].userID == user_id){
+     if(collection[key].user_id == user_id){
       userURLs[key] = collection[key].longURL;
      }
   }

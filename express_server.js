@@ -183,11 +183,13 @@ app.get("/urls/:id", (req, res) => {
   let id = req.session.user_id;
   userUrlDB = urlsForUser(urlDatabase, id);
 
+  let longURLentry = req.params.id ? userUrlDB[req.params.id] : '';
+
   const templateVars = {
     id: req.params.id,
     user_id: req.session.user_id,
     email: users[id].email, // 3
-    longURL: userUrlDB[req.params.id],
+    longURL: longURLentry,
   };
   res.render("urls_show", templateVars);
 });
