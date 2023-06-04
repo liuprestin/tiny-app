@@ -7,11 +7,20 @@ A tiny URL shortener application writen with nodejs/express.
 
 Note: this application is not for production environments. 
 
-## How to run
+## Getting Started and running 
 
-/tiny-app directory:
+In the tinyApp directory:
 
-npm start 
+npm install 
+npm run 
+
+in your browser goto:
+
+localhost:8080/register/
+
+in most cases the application will goto
+
+localhost:8080/urls/
 
 ## Testing and Troubleshooting 
 
