@@ -9,11 +9,11 @@ Note: this application is not for production environments.
 
 ## Demo Screens
 
-!["Register a new user"](Register.png)
-!["Add a new URL to shorten"](CreateURL.png)
-!["MyURLS main page with a new entry"](MyURLS.png)
-!["Edit a URL"](EDITurl.png)
-!["Login page after registration"](Login.png)
+!["Register a new user"](docs/Register.png)
+!["Add a new URL to shorten"](docs/CreateURL.png)
+!["MyURLS main page with a new entry"](docs/MyURLS.png)
+!["Edit a URL"](docs/EDITurl.png)
+!["Login page after registration"](docs/Login.png)
 
 
 ## Getting Started and running 
