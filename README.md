@@ -7,20 +7,29 @@ A tiny URL shortener application writen with nodejs/express.
 
 Note: this application is not for production environments. 
 
+## Demo Screens
+
+!["Register a new user"](Register.png)
+!["Add a new URL to shorten"](CreateURL.png)
+!["MyURLS main page with a new entry"](MyURLS.png)
+!["Edit a URL"](EDITurl.png)
+!["Login page after registration"](Login.png)
+
+
 ## Getting Started and running 
 
 In the tinyApp directory:
 
-npm install 
-npm run 
+`npm install `
+`npm run `
 
 in your browser goto:
 
-localhost:8080/register/
+`localhost:8080/register/`
 
 in most cases the application will goto
 
-localhost:8080/urls/
+`localhost:8080/urls/`
 
 ## Testing and Troubleshooting 
 
@@ -39,6 +48,17 @@ on unix:
 
 lsof -i :8080
 kill -9 <PID>
+
+**Cookie clearing**
+
+ensure session cookies are cleared in 
+your browser.
+
+In firefox
+ctrl+shift+I > storage > leftbar: "cookies"
+
+In Chrome
+ctrl+shift+I > Application > leftbar: "cookies"
 
 ## Dependencies
 
