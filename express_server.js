@@ -6,7 +6,7 @@ const {
   userPasswordCheck,
 } = require("./usersUtil.js");
 
-const {} = require("./urldbUtil.js")
+const { urlsForUser, addNewUrl, deleteUrl, updateUrl } = require("./urldbUtil.js")
 const app = express();
 const PORT = 8080; // default port 8080
 
@@ -31,26 +31,9 @@ app.use((req, res, next) => {
   next();
 });
 
-//FIXME: remove the test values
-let urlDatabase = {
-  b2xVn2: "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com",
-};
+let urlDatabase = {};
 
-
-//FIXME: remove the test values
-const users = {
-  userRandomID: {
-    id: "userRandomID",
-    email: "user@example.com",
-    password: "purple-monkey-dinosaur",
-  },
-  user2RandomID: {
-    id: "user2RandomID",
-    email: "user2@example.com",
-    password: "dishwasher-funk",
-  },
-};
+const users = {};
 
 //Homepage
 app.get("/", (req, res) => {
@@ -68,7 +51,7 @@ app.get("/register", (req, res) => {
   let email;
   let templateVars = {
     user_id: req.session.user_id,
-    email: "no@email.com",   //<_______________ FIX
+    email: "no@email.com",  
   };
 
   res.render("register", templateVars);
@@ -95,7 +78,6 @@ app.post("/register", (req, res) => {
   let hashedPassword = bcrypt.hashSync(password, salt);
 
   users[id] = { id, email, password: hashedPassword };
-  console.log(users);
   req.session.user_id = id;
 
   res.redirect(`/urls/`);
@@ -139,7 +121,6 @@ app.post("/login", (req, res) => {
   }
 
   req.session.user_id = id;
-  console.log(req.session.user_id);
 
   res.redirect(`/urls/`);
 });
@@ -159,12 +140,14 @@ app.get("/urls", (req, res) => {
 
   let id = req.session.user_id;
   let email = id ? users[id].email : '';
+
+  userUrlDB = urlsForUser(urlDatabase, id);
   
 
   const templateVars = {
     user_id: req.session.user_id,
     email: users[id].email, // 1
-    urls: urlDatabase,
+    urls: userUrlDB,
   };
   res.render("urls_index", templateVars);
 });
@@ -178,10 +161,13 @@ app.get("/urls/new", (req, res) => {
   }
   let id = req.session.user_id;
 
+  userUrlDB = urlsForUser(urlDatabase, id);
+
   const templateVars = {
+    id: req.params.id,
     user_id: req.session.user_id,
     email: users[id].email,
-    urls: urlDatabase,
+    urls: userUrlDB,
   };
 
   res.render("urls_new", templateVars);
@@ -195,38 +181,46 @@ app.get("/urls/:id", (req, res) => {
   }
 
   let id = req.session.user_id;
+  userUrlDB = urlsForUser(urlDatabase, id);
 
   const templateVars = {
     id: req.params.id,
+    user_id: req.session.user_id,
     email: users[id].email, // 3
-    longURL: urlDatabase[req.params.id],
+    longURL: userUrlDB[req.params.id],
   };
   res.render("urls_show", templateVars);
 });
 
 //Handling the short URLS
 app.get("/u/:id", (req, res) => {
+  let id = req.session.user_id;
+  userUrlDB = urlsForUser(urlDatabase, id);
 
-  if (!urlDatabase[req.params.id]) {
+  if (!userUrlDB[req.params.id]) {
     res.status(400).end("<p>tiny url id does not exist</p>");
     return;
   }
 
-  const longURL = urlDatabase[req.params.id];
+  const longURL = userUrlDB[req.params.id];
   res.redirect(longURL);
 });
 
 //Capture a input url for the database
 app.post("/urls", (req, res) => {
   if (!req.session.user_id) {
-    console.log(req.session.user_id);
     res.send(`<p> You must be logged in to shorten URLs </p>`);
     res.redirect(`/login`);
     return;
   }
 
   let uniqueID = generateRandomString();
-  urlDatabase[uniqueID] = req.body.longURL;
+
+  let id = req.session.user_id;
+  userUrlDB = urlsForUser(urlDatabase, id);
+
+  addNewUrl(urlDatabase, uniqueID, req.body.longURL, id);
+
   res.redirect(`/urls/${uniqueID}`);
 });
 
@@ -234,7 +228,7 @@ app.post("/urls", (req, res) => {
 app.post("/urls/:id/delete", (req, res) => {
   fullUrl = req.url.split("/");
   id = fullUrl[2];
-  delete urlDatabase[id];
+  deleteUrl(urlDatabase, id);
 
   res.redirect(`/urls/`);
 });
@@ -244,9 +238,9 @@ app.post("/urls/:id/update", (req, res) => {
   fullUrl = req.url.split("/");
   id = fullUrl[2];
 
-  updateURL = req.body.updateURL;
+  updatedURL = req.body.updateURL;
 
-  urlDatabase[id] = updateURL;
+  updateUrl(urlDatabase, id, updatedURL);
 
   res.redirect(`/urls/`);
 });
@@ -254,7 +248,7 @@ app.post("/urls/:id/update", (req, res) => {
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);
-  res.status(500).send("Something broke!");
+  res.status(500).send("Something broke! see the console");
   return;
 });
 
