@@ -36,7 +36,6 @@ function userPasswordCheck(collection, id, email, password) {
 function getUserByEmail(collection, email) {
   for (let [key, value] of Object.entries(collection)) {
     if (collection[key].email == email) {
-        console.log(collection[key].id);
       return collection[key].id;
     }
   }
