@@ -1,4 +1,10 @@
+const https = require("https");
+const fs = require("fs");
+
 const express = require("express");
+const cookieSession = require("cookie-session");
+const bcrypt = require("bcryptjs");
+
 const { generateRandomString } = require("./helper/util.js");
 const {
   userEmailSearch,
@@ -6,30 +12,39 @@ const {
   userPasswordCheck,
 } = require("./helper/usersUtil.js");
 
-const { urlsForUser, addNewUrl, deleteUrl, updateUrl } = require("./helper/urldbUtil.js")
-const app = express();
-const PORT = 8080; // default port 8080
+const {
+  urlsForUser,
+  addNewUrl,
+  deleteUrl,
+  updateUrl,
+} = require("./helper/urldbUtil.js");
 
 const morgan = require("morgan");
-const cookieSession = require("cookie-session");
-const bcrypt = require("bcryptjs");
 
+
+const app = express();
+
+//network and https configuration
+const PORT = 8080;
+const options = {
+  key: fs.readFileSync("./setup/testKey.pem"),
+  cert: fs.readFileSync("./setup/testCert.pem"),
+};
+
+//for development only
 app.use(morgan("dev"));
 
 app.use(express.urlencoded({ extended: true }));
 app.set("view engine", "ejs");
-app.use(cookieSession({
-  name: 'session',
-  keys: ['keya'],
+app.use(
+  cookieSession({
+    name: "session",
+    keys: ["1"],
+    secure: false,
 
-  // Cookie Options
-  maxAge: 2 * 60 * 60 * 1000 // 2 hours session span
-}));
-
-app.use((req, res, next) => {
-  req.session.views = (req.session.views || 0) + 1;
-  next();
-});
+    maxAge: 2 * 60 * 60 * 1000, // 2 hours session span
+  })
+);
 
 const urlDatabase = {};
 
@@ -42,7 +57,6 @@ app.get("/", (req, res) => {
 
 //Registration
 app.get("/register", (req, res) => {
-
   if (req.session.user_id) {
     res.redirect("/urls/");
   }
@@ -51,7 +65,7 @@ app.get("/register", (req, res) => {
 
   const templateVars = {
     user_id: id,
-    email: "no@email.com",  
+    email: "no@email.com",
   };
 
   res.render("register", templateVars);
@@ -85,7 +99,6 @@ app.post("/register", (req, res) => {
 
 //LOGIN
 app.get("/login", (req, res) => {
-
   if (req.session.user_id) {
     res.redirect("/urls/");
   }
@@ -127,7 +140,6 @@ app.post("/login", (req, res) => {
 
 app.post("/logout", (req, res) => {
   req.session = null;
-  res.cookie('session', '', { expires: new Date(0) });
   res.redirect(`/login`);
 });
 
@@ -140,21 +152,19 @@ app.get("/urls", (req, res) => {
   }
 
   const id = req.session.user_id;
-  const email = id ? users[id].email : '';
+  const email = id ? users[id].email : "";
 
   userUrlDB = urlsForUser(urlDatabase, id);
-  
 
   const templateVars = {
     user_id: req.session.user_id,
-    email, 
+    email,
     urls: userUrlDB,
   };
   res.render("urls_index", templateVars);
 });
 
 app.get("/urls/new", (req, res) => {
-
   if (!req.session.user_id) {
     res.send(`<p> You must be logged in to shorten URLs </p>`);
     res.redirect(`/login`);
@@ -183,13 +193,13 @@ app.get("/urls/:id", (req, res) => {
 
   const id = req.session.user_id;
   userUrlDB = urlsForUser(urlDatabase, id);
-  
+
   if (!userUrlDB[req.params.id]) {
     res.status(400).end("<p>tiny url id does not exist for this user</p>");
     return;
   }
 
-  const longURLentry = req.params.id ? userUrlDB[req.params.id] : '';
+  const longURLentry = req.params.id ? userUrlDB[req.params.id] : "";
 
   const templateVars = {
     id: req.params.id,
@@ -202,15 +212,7 @@ app.get("/urls/:id", (req, res) => {
 
 //Handling the short URLS
 app.get("/u/:id", (req, res) => {
-  const id = req.session.user_id;
-  userUrlDB = urlsForUser(urlDatabase, id);
-
-  if (!userUrlDB[req.params.id]) {
-    res.status(400).end("<p>tiny url id does not exist</p>");
-    return;
-  }
-
-  const longURL = userUrlDB[req.params.id];
+  const longURL = urlDatabase[req.params.id].longURL;
   res.redirect(longURL);
 });
 
@@ -260,6 +262,8 @@ app.use((err, req, res, next) => {
   return;
 });
 
-app.listen(PORT, () => {
+const server = https.createServer(options, app);
+
+server.listen(PORT, () => {
   console.log(`Tiny Url app listening on port ${PORT}!`);
 });

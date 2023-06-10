@@ -25,11 +25,11 @@ In the tinyApp directory:
 
 in your browser goto:
 
-`localhost:8080/register/`
+`https://localhost:8080/register/`
 
 in most cases the application will goto
 
-`localhost:8080/urls/`
+`https://localhost:8080/urls/`
 
 ## Testing and Troubleshooting 
 
