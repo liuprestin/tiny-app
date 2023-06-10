@@ -213,6 +213,12 @@ app.get("/urls/:id", (req, res) => {
 //Handling the short URLS
 app.get("/u/:id", (req, res) => {
   const longURL = urlDatabase[req.params.id].longURL;
+
+  if (!longURL) {
+    res.status(400).end("<p>tiny url does not exist</p>");
+    return;
+  }
+  
   res.redirect(longURL);
 });
 
